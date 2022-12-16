@@ -81,11 +81,13 @@ func main() {
 	doSentimentAnalysis(singleGenreMap, sentimentModel)
 	doSentimentAnalysis(multipleGenreMap, sentimentModel)
 
+	// write results to csv
 	writeToCSV(singleGenreMap, "output_hypothese12.csv")
 	writeToCSV(multipleGenreMap, "output_hypothese3.csv")
 
 }
 
+// iterate through genreMap and calculate score
 func doSentimentAnalysis(genreMap map[string]PairList, sentimentModel sentiment.Models) {
 	for key := range genreMap {
 		for x := range genreMap[key] {
@@ -95,6 +97,7 @@ func doSentimentAnalysis(genreMap map[string]PairList, sentimentModel sentiment.
 	}
 }
 
+// sort counted words ascending
 func sortGenreMaps(genreWordMap map[string]map[string]int, genreMap map[string]PairList) {
 	for key, val := range genreWordMap {
 		for k, v := range val {
@@ -106,6 +109,7 @@ func sortGenreMaps(genreWordMap map[string]map[string]int, genreMap map[string]P
 	}
 }
 
+// count words for each genre
 func countGenreWords(allMovies []*models.IMDBMovie, singleGenreWordMap map[string]map[string]int, multipleGenreWordMap map[string]map[string]int) {
 	for x := range allMovies {
 		tmpMovieData := &models.TitleMapData{
@@ -209,6 +213,7 @@ func writeDataToDB() {
 	}
 }
 
+// get all movies from mongodb
 func getAllMovies() ([]*models.IMDBMovie, error) {
 	cursor, err := lib.MongoDBGetIMDBCollection().Find(context.TODO(), bson.D{{}}, options.Find())
 	if err != nil {
@@ -223,6 +228,7 @@ func getAllMovies() ([]*models.IMDBMovie, error) {
 	return allMovies, nil
 }
 
+// get all comments for each movie from mongodb
 func getAllComments() ([]*models.IMDBComments, error) {
 	cursor, err := lib.MongoDBGetCommentsCollection().Find(context.TODO(), bson.D{{}}, options.Find())
 	if err != nil {
@@ -238,6 +244,7 @@ func getAllComments() ([]*models.IMDBComments, error) {
 	return commentResult, nil
 }
 
+// get comments for specific movie from mongodb
 func getSpecificMovieComments(imdbID string) ([]*models.IMDBComments, error) {
 	cursor, err := lib.MongoDBGetCommentsCollection().Find(context.TODO(), bson.M{"id": imdbID}, options.Find())
 	if err != nil {
@@ -253,17 +260,15 @@ func getSpecificMovieComments(imdbID string) ([]*models.IMDBComments, error) {
 	return movieComments, nil
 }
 
+// tokenize and remove stopwords from comment
 func tokenizeAndRemoveStopWordsFromComment(comment string) []string {
+	// extract single comment without any special character
 	r, _ := regexp.Compile(`[\p{P}\p{S}]+`)
 	stopwords.LoadStopWordsFromFile("stopwords_new.txt", "en", "\n")
+	// delete whitespaces
 	cleanedSpecialCharsComment := r.ReplaceAllString(comment, " ")
 	cleanedComment := stopwords.CleanString(cleanedSpecialCharsComment, "en", false)
 	tokens := t.Tokenize(cleanedComment)
-
-	// doc, err := prose.NewDocument(cleanedComment)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
 
 	return tokens
 }
@@ -282,14 +287,11 @@ func countWords(tokens []string) map[string]int {
 	return tmpWordCountMap
 }
 
-func (p PairList) Len() int           { return len(p) }
-func (p PairList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
-func (p PairList) Less(i, j int) bool { return p[i].Value < p[j].Value }
-
 // write sentiment results to csv
 func writeToCSV(pairMap map[string]PairList, filename string) {
 	var csvData []*models.CSVModel
 
+	// iterate through pairMap and generate csv
 	for key := range pairMap {
 
 		for i := range pairMap[key] {
@@ -319,6 +321,7 @@ func writeToCSV(pairMap map[string]PairList, filename string) {
 
 }
 
+// map sentiment score to string
 func scoreToString(sentimentScore uint8) string {
 	var result string
 
