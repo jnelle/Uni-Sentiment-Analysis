@@ -19,14 +19,20 @@ func init() {
 	}
 }
 
-func MongoDBGetIMDBCollection() *mongo.Collection {
+func MongoDBIMDBCollection() *mongo.Collection {
 	// Database returns a handle for a database with the given name configured with the given DatabaseOptions.
 	// Collection gets a handle for a collection with the given name configured with the given CollectionOptions
-	return client.Database("uni").Collection("imdb")
+	return client.Database("main").Collection("movies")
 }
 
-func MongoDBGetCommentsCollection() *mongo.Collection {
+func MongoDBCommentsCollection() *mongo.Collection {
 	// Database returns a handle for a database with the given name configured with the given DatabaseOptions.
 	// Collection gets a handle for a collection with the given name configured with the given CollectionOptions
-	return client.Database("uni").Collection("comments")
+	return client.Database("main").Collection("reviews")
+}
+
+func MongoDBProcessedReviews() *mongo.Collection {
+	// Database returns a handle for a database with the given name configured with the given DatabaseOptions.
+	// Collection gets a handle for a collection with the given name configured with the given CollectionOptions
+	return client.Database("main").Collection("processed_reviews")
 }
